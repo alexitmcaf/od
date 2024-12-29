@@ -1,37 +1,36 @@
-version: '3.8'
+version: '3.3'
 
 services:
   db:
     build:
-      context: ./docker
+      context: .  # Set the build context to the project root
+      dockerfile: docker/Dockerfile  # Reference the Dockerfile in the 'docker' directory
     image: mypostgres:15
-    user: root
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo16@2022
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=odoo16
     restart: always
     volumes:
       - ./postgresql:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 10s
-      timeout: 5s
       retries: 5
+      timeout: 5s
     networks:
-      - odoo-network
+        - odoo-network
 
   odoo16:
     build:
-      context: ./docker
+      context: .  # Set the build context to the project root
+      dockerfile: docker/Dockerfile  # Reference the Dockerfile in the 'docker' directory
     image: myodoo:16
-    user: root
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     ports:
       - "10016:8069"
-      - "20016:8072" # live chat
+      - "20016:8072"  # live chat
     tty: true
     environment:
       - DB_HOST=db
@@ -43,9 +42,10 @@ services:
       - ./addons:/mnt/extra-addons
       - ./update_module_list.py:/scripts/update_module_list.py
       - ./etc:/etc/odoo
+      - ./scripts:/scripts
     entrypoint: >
       bash -c "
-      python3 /scripts/update_module_list.py &&
+      /scripts/wait-for-it.sh db:5432 -- python3 /scripts/update_module_list.py &&
       /entrypoint.sh odoo"
     restart: always
     networks:
