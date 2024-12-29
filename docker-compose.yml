@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo16@2022
-      - POSTGRES_DB=db
+      - POSTGRES_DB=postgres
     restart: always
     volumes:
       - ./postgresql:/var/lib/postgresql/data
@@ -30,7 +30,7 @@ services:
       - "20016:8072" # live chat
     tty: true
     environment:
-      - DB_HOST=db
+      - DB_HOST=localhost
       - DB_PORT=5432
       - DB_USER=odoo
       - DB_PASSWORD=odoo16@2022
