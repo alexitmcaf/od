@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo16@2022
-      - POSTGRES_DB=localhost
+      - POSTGRES_DB=postgres
     restart: always
     volumes:
       - ./postgresql:/var/lib/postgresql/data
