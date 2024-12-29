@@ -4,7 +4,7 @@ services:
   db:
     build:
       context: ./db
-    image: your_dockerhub_username/custom_postgres:15
+    image: alexitmcaf/custom_postgres:15
     user: root
     environment:
       - POSTGRES_USER=odoo
@@ -24,7 +24,7 @@ services:
   odoo16:
     build:
       context: ./odoo16
-    image: your_dockerhub_username/custom_odoo:16
+    image: alexitmcaf/custom_odoo:16
     user: root
     depends_on:
       db:
