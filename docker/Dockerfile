@@ -5,8 +5,8 @@ FROM odoo:16
 COPY ./addons /mnt/extra-addons
 
 # Copy your Odoo configuration file into the container
-COPY ./etc/odoo.conf /etc/odoo/
-
+# COPY ./etc/odoo.conf /etc/odoo/
+COPY odoo.conf /etc/odoo/
 # Set the environment variable for the Odoo config file
 ENV ODOO_CONF=/etc/odoo/odoo.conf
 
