@@ -19,6 +19,9 @@ services:
     networks:
       - odoo-network
 
+volumes:
+  postgres_data:
+
   odoo16:
     image: odoo:16
     user: root
