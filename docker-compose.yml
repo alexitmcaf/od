@@ -2,12 +2,14 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15
+    build:
+      context: ./db
+    image: your_dockerhub_username/custom_postgres:15
     user: root
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo16@2022
-      - POSTGRES_DB=
+      - POSTGRES_DB=postgres
     restart: always
     volumes:
       - ./postgresql:/var/lib/postgresql/data
@@ -20,7 +22,9 @@ services:
       - odoo-network
 
   odoo16:
-    image: odoo:16
+    build:
+      context: ./odoo16
+    image: your_dockerhub_username/custom_odoo:16
     user: root
     depends_on:
       db:
