@@ -2,9 +2,7 @@ version: '3.8'
 
 services:
   db:
-    build:
-      context: ./db
-    image: alexitmcaf/custom_postgres:15
+    image: postgres:15
     user: root
     environment:
       - POSTGRES_USER=odoo
@@ -22,9 +20,7 @@ services:
       - odoo-network
 
   odoo16:
-    build:
-      context: ./odoo16
-    image: alexitmcaf/custom_odoo:16
+    image: odoo:16
     user: root
     depends_on:
       db:
