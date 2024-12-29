@@ -9,7 +9,9 @@ services:
       - POSTGRES_DB=postgres
     restart: always             # run as a service
     volumes:
-        - ./postgresql:/var/lib/postgresql/data
+      - ./postgresql:/var/lib/postgresql/data
+    networks:
+      - odoo-network
 
   odoo16:
     image: odoo:16
@@ -20,7 +22,7 @@ services:
       - "10016:8069"
       - "20016:8072" # live chat
     tty: true
-    command: --
+    command: -- 
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -38,5 +40,10 @@ services:
       bash -c "
       python3 /scripts/update_module_list.py &&
       /entrypoint.sh odoo"
-    restart: always             # run as a service
-    
+    restart: always
+    networks:
+      - odoo-network
+
+networks:
+  odoo-network:
+    driver: bridge
