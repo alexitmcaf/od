@@ -3,8 +3,8 @@ version: '3.8'
 services:
   db:
     build:
-      context: ./docker  # Use the Dockerfile.db in the ./docker directory to build the PostgreSQL image
-    image: mypostgres:15  # Custom name for your PostgreSQL image
+      context: ./docker
+    image: mypostgres:15
     user: root
     environment:
       - POSTGRES_USER=odoo
@@ -12,7 +12,7 @@ services:
       - POSTGRES_DB=postgres
     restart: always
     volumes:
-      - ./postgresql:/var/lib/postgresql/data  # Mount local directory for persistence
+      - ./postgresql:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 10s
@@ -23,8 +23,8 @@ services:
 
   odoo16:
     build:
-      context: ./docker  # Use the Dockerfile in the ./docker directory to build the Odoo image
-    image: myodoo:16  # Custom name for your Odoo image
+      context: ./docker
+    image: myodoo:16
     user: root
     depends_on:
       db:
