@@ -24,3 +24,7 @@ jobs:
         docker buildx create --use
         docker buildx build --push \
                             -t ${{ secrets.DOCKER_USERNAME }}/odoo:16 ./docker
+                            
+    - name: Deploy to Azure with Docker Compose
+      run: |
+        docker-compose -f docker-compose.yml up -d
