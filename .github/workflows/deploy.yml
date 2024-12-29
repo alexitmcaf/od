@@ -1,37 +1,59 @@
-name: Deploy to Azure
+name: CI/CD for Odoo with Custom PostgreSQL
 
 on:
   push:
     branches:
-      - main
+      - main   # Trigger on push to the main branch
 
 jobs:
-  build-and-deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Checkout the code
+      - name: Checkout the repository
+        uses: actions/checkout@v2
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Check Docker version
-      run: docker --version
+      # Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Odoo Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --push \
-          -t ${{ secrets.DOCKER_USERNAME }}/odoo:16 ./docker
+      # Build PostgreSQL custom image
+      - name: Build PostgreSQL Docker image
+        run: |
+          cd docker
+          docker build -f Dockerfile.db -t mypostgres:15 .
 
-    - name: Pull PostgreSQL Docker image
-      run: |
-        docker pull postgres:15
+      # Build Odoo custom image
+      - name: Build Odoo Docker image
+        run: |
+          cd docker
+          docker build -f Dockerfile -t myodoo:16 .
 
-    - name: Deploy to Azure with Docker Compose
-      run: |
-        docker compose -f docker-compose.yml up -d
+      # Push PostgreSQL Docker image to Docker Hub
+      - name: Push PostgreSQL Docker image
+        run: |
+          docker push mypostgres:15
+
+      # Push Odoo Docker image to Docker Hub
+      - name: Push Odoo Docker image
+        run: |
+          docker push myodoo:16
+
+      # Deploy to server (Optional: Replace with your actual server details)
+      # - name: Deploy to Server
+      #   run: |
+      #     ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
+      #       cd /path/to/your/project && \
+      #       docker-compose -f docker-compose.yml pull && \
+      #       docker-compose -f docker-compose.yml up -d"
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+

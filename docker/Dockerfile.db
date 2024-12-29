@@ -1,0 +1,13 @@
+# Use the official PostgreSQL image as the base
+FROM postgres:15
+
+# Set environment variables
+ENV POSTGRES_USER=odoo
+ENV POSTGRES_PASSWORD=odoo16@2022
+ENV POSTGRES_DB=postgres
+
+# Copy your database dump into the Docker container for initialization
+COPY ./postgresql/your_database_backup.sql /docker-entrypoint-initdb.d/
+
+# Expose PostgreSQL port
+EXPOSE 5432
