@@ -19,12 +19,8 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Install Docker Compose (if not installed)
-      run: |
-        if ! docker compose version; then
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-        fi
+    - name: Check Docker version
+      run: docker --version
 
     - name: Build and push Odoo Docker image
       run: |
@@ -38,4 +34,4 @@ jobs:
 
     - name: Deploy to Azure with Docker Compose
       run: |
-        docker-compose -f docker-compose.yml up -d
+        docker compose -f docker-compose.yml up -d
