@@ -8,6 +8,7 @@ RUN mkdir -p /mnt/extra-addons && chown -R odoo:odoo /mnt/extra-addons
 ARG CACHE_BUSTER=1
 RUN ls -la .
 RUN ls -la ./addons
+RUN ls -la /mnt/extra-addons
 COPY ./addons /mnt/extra-addons
 RUN ls -la /mnt/extra-addons
 
