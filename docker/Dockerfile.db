@@ -1,20 +1,20 @@
 # Use the official PostgreSQL image as the base
-FROM postgres:15
+# FROM postgres:15
 
-# Set default environment variables for PostgreSQL
-ARG POSTGRES_USER=odoo
-ARG POSTGRES_PASSWORD=odoo16@2022
-ARG POSTGRES_DB=odoo16
+# # Set default environment variables for PostgreSQL
+# ARG POSTGRES_USER=odoo
+# ARG POSTGRES_PASSWORD=odoo16@2022
+# ARG POSTGRES_DB=odoo16
 
-ENV POSTGRES_USER=${POSTGRES_USER}
-ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-ENV POSTGRES_DB=${POSTGRES_DB}
+# ENV POSTGRES_USER=${POSTGRES_USER}
+# ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+# ENV POSTGRES_DB=${POSTGRES_DB}
 
-# Copy initialization scripts
-COPY ./init.sql /docker-entrypoint-initdb.d/
+# # Copy initialization scripts
+# COPY ./init.sql /docker-entrypoint-initdb.d/
 
-# Expose the PostgreSQL port
-EXPOSE 5432
+# # Expose the PostgreSQL port
+# EXPOSE 5432
 
-# Healthcheck to verify the database is running
-HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD pg_isready -U ${POSTGRES_USER}
+# # Healthcheck to verify the database is running
+# HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD pg_isready -U ${POSTGRES_USER}
