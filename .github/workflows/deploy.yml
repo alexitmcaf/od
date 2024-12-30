@@ -13,38 +13,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
+      # Step 1: Checkout the code
       - name: Checkout the repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      # Debug repository files
+      # Step 2: Debug repository files
       - name: List repository files
         run: ls -la
 
-      # Verify addons directory exists
+      # Step 3: Verify addons directory exists
       - name: Verify addons directory
         run: ls -la ./addons || echo "addons directory not found"
 
-      # Set up Docker Buildx
+      # Step 4: Copy addons to docker folder (if necessary)
+      - name: Copy addons directory
+        run: |
+          mkdir -p docker/addons
+          cp -r ./addons/* ./docker/addons/
+
+      # Step 5: Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Log in to Docker Hub
+      # Step 6: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Copy addons directory to docker folder (if necessary)
-      - name: Copy addons directory
-        run: |
-          mkdir -p docker/addons
-          cp -r ./addons/* ./docker/addons/
-
-      # Build and Push Odoo Docker image
+      # Step 7: Build and Push Odoo Docker image
       - name: Build and Push Odoo Docker image
         uses: docker/build-push-action@v2
         with:
@@ -52,14 +52,3 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: myodoo:latest,myodoo:${{ env.IMAGE_TAG }}
-
-      # Deploy to Server (Optional)
-      # - name: Deploy to Server
-      #   if: always()  # Adjust condition if necessary
-      #   run: |
-      #     ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
-      #       cd /path/to/your/project &&
-      #       docker-compose -f docker-compose.yml pull &&
-      #       docker-compose -f docker-compose.yml up -d"
-      #   env:
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
