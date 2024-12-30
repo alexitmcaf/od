@@ -32,13 +32,14 @@ services:
       DB_NAME: odoo16
       ODOO_CONF: /etc/odoo/odoo.conf
     volumes:
-      # - ./addons:/mnt/extra-addons
+      - ./addons:/mnt/extra-addons
       - ./update_module_list.py:/scripts/update_module_list.py
       - ./etc:/etc/odoo
       - ./scripts:/scripts
     entrypoint: >
       bash -c "
       /scripts/wait-for-it.sh db:5432 --timeout=60 &&
+      python3 /scripts/update_module_list.py &&
       /entrypoint.sh odoo"
     restart: always
     networks:
