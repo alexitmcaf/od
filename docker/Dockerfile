@@ -5,6 +5,7 @@ FROM odoo:16.0
 RUN mkdir -p /mnt/extra-addons && chown -R odoo:odoo /mnt/extra-addons
 
 # Copy your custom addons into the container
+ARG CACHE_BUSTER=1
 RUN ls -la .
 RUN ls -la ./addons
 COPY ./addons /mnt/extra-addons
