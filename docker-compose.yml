@@ -1,55 +1,52 @@
-version: '3.3'
+version: '3.7'
 
 services:
   db:
-    build:
-      context: .  # Set the build context to the project root
-      dockerfile: docker/Dockerfile  # Reference the Dockerfile in the 'docker' directory
-    image: mypostgres:15
+    image: postgres:15
     environment:
-      - POSTGRES_USER=odoo
-      - POSTGRES_PASSWORD=odoo16@2022
-      - POSTGRES_DB=odoo16
-    restart: always
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo16@2022
+      POSTGRES_DB: odoo16
     volumes:
-      - ./postgresql:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
+      - postgres_data:/var/lib/postgresql/data
     networks:
-        - odoo-network
+      - odoo-network
+    restart: always
 
   odoo16:
     build:
-      context: .  # Set the build context to the project root
-      dockerfile: docker/Dockerfile  # Reference the Dockerfile in the 'docker' directory
+      context: .
+      dockerfile: docker/Dockerfile
     image: myodoo:16
     depends_on:
       - db
     ports:
       - "10016:8069"
-      - "20016:8072"  # live chat
+      - "20016:8072"
     tty: true
     environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_USER=odoo
-      - DB_PASSWORD=odoo16@2022
-      - ODOO_CONF=/etc/odoo/odoo.conf
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: odoo
+      DB_PASSWORD: odoo16@2022
+      DB_NAME: odoo16
+      ODOO_CONF: /etc/odoo/odoo.conf
     volumes:
-      - ./addons:/mnt/extra-addons
+      # - ./addons:/mnt/extra-addons
       - ./update_module_list.py:/scripts/update_module_list.py
       - ./etc:/etc/odoo
       - ./scripts:/scripts
     entrypoint: >
       bash -c "
-      /scripts/wait-for-it.sh db:5432 -- python3 /scripts/update_module_list.py &&
+      /scripts/wait-for-it.sh db:5432 --timeout=60 &&
       /entrypoint.sh odoo"
     restart: always
     networks:
       - odoo-network
+
+
+volumes:
+  postgres_data: {}
 
 networks:
   odoo-network:
