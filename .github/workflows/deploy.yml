@@ -1,59 +1,33 @@
-name: CI/CD for Odoo with Custom PostgreSQL
+name: CI/CD Pipeline for Odoo 16
 
 on:
   push:
     branches:
-      - main   # Trigger on push to the main branch
+      - main
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
-      - name: Checkout the repository
+      - name: Checkout the code
         uses: actions/checkout@v2
 
-      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # # Build PostgreSQL custom image
-      # - name: Build PostgreSQL Docker image
-      #   run: |
-      #     cd docker
-      #     docker build -f Dockerfile.db -t mypostgres:15 .
-
-      # Build Odoo custom image
-      - name: Build Odoo Docker image
+      - name: Build and push Docker images
         run: |
-          cd docker
-          docker build -f Dockerfile -t myodoo:16 .
+          docker-compose -f docker-compose.yml build
+          docker-compose -f docker-compose.yml push
 
-      # Push PostgreSQL Docker image to Docker Hub
-      - name: Push PostgreSQL Docker image
-        run: |
-          docker push mypostgres:15
-
-      # Push Odoo Docker image to Docker Hub
-      - name: Push Odoo Docker image
-        run: |
-          docker push myodoo:16
-
-      # Deploy to server (Optional: Replace with your actual server details)
       # - name: Deploy to Server
       #   run: |
-      #     ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
-      #       cd /path/to/your/project && \
-      #       docker-compose -f docker-compose.yml pull && \
-      #       docker-compose -f docker-compose.yml up -d"
-      #   env:
-      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     ssh ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "docker-compose -f /path/to/docker-compose.yml pull && docker-compose -f /path/to/docker-compose.yml up -d"
 
