@@ -2,7 +2,7 @@
 FROM odoo:16
 
 # Copy your custom addons into the container
-COPY ../addons /mnt/extra-addons
+COPY ./addons /mnt/extra-addons
 RUN ls -la /mnt/extra-addons
 
 # Copy your Odoo configuration file into the container
