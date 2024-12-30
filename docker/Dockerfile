@@ -9,12 +9,13 @@ ARG CACHE_BUSTER=1
 RUN echo "Debugging build context..." && ls -la .
 
 # Copy your custom addons into the container
-RUN echo "Debugging addons directory before COPY..." && ls -la ./addons || echo "addons directory not found"
 COPY ./addons /mnt/extra-addons
-RUN echo "Debugging addons directory after COPY..." && ls -la /mnt/extra-addons
+RUN echo "Debugging addons directory..." && ls -la /mnt/extra-addons
 
 # Copy your Odoo configuration file into the container
+RUN echo "Debugging etc directory..." && ls -la ./etc
 COPY ./etc/odoo.conf /etc/odoo/
+RUN echo "Debugging /etc/odoo directory..." && ls -la /etc/odoo
 
 # Set the environment variable for the Odoo config file
 ENV ODOO_CONF=/etc/odoo/odoo.conf
