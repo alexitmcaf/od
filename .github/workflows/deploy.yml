@@ -38,12 +38,12 @@ jobs:
           tags: myodoo:latest,myodoo:${{ env.IMAGE_TAG }}
 
       # Deploy to Server (Optional)
-      - name: Deploy to Server
-        if: always()  # Adjust condition if necessary
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
-            cd /path/to/your/project &&
-            docker-compose -f docker-compose.yml pull &&
-            docker-compose -f docker-compose.yml up -d"
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      # - name: Deploy to Server
+      #   if: always()  # Adjust condition if necessary
+      #   run: |
+      #     ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_IP }} "
+      #       cd /path/to/your/project &&
+      #       docker-compose -f docker-compose.yml pull &&
+      #       docker-compose -f docker-compose.yml up -d"
+      #   env:
+      #     SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
