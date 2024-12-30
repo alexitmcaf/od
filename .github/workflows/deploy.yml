@@ -51,4 +51,4 @@ jobs:
           context: docker
           file: docker/Dockerfile
           push: true
-          tags: od:latest,od:${{ env.IMAGE_TAG }}
+           tags: ${{ secrets.DOCKER_USERNAME }}/od:latest,${{ secrets.DOCKER_USERNAME }}/od:${{ env.IMAGE_TAG }}
