@@ -15,35 +15,35 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Install Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Build and Start Docker Compose
-        run: |
-          docker-compose -f docker-compose.test.yml up -d --build
+      - name: Start Docker Compose
+        run: docker-compose -f docker-compose.test.yml up -d --build
+
+      - name: List Running Containers
+        run: docker ps -a
 
       - name: Wait for PostgreSQL
         run: |
           for i in {1..20}; do
-            docker exec odoo-one_db_1 pg_isready -U odoo && break
+            docker exec $(docker ps -q -f name=db) pg_isready -U odoo && break
             echo "Waiting for PostgreSQL to be ready..."
             sleep 10
           done
 
       - name: Create Odoo Database
         run: |
-          docker exec odoo-one_db_1 psql -U odoo -d postgres -c "CREATE DATABASE odoo16;"
+          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "CREATE DATABASE odoo16;"
 
       - name: Debug PostgreSQL
         run: |
-          docker exec odoo-one_db_1 psql -U odoo -c "\l"
+          docker exec $(docker ps -q -f name=db) psql -U odoo -c "\l"
 
-      - name: Wait for Odoo to Start
+      - name: Wait for Odoo
         run: |
           for i in {1..20}; do
             if curl -f http://localhost:10016; then
@@ -55,5 +55,4 @@ jobs:
           done
 
       - name: Stop Docker Compose
-        run: |
-          docker-compose -f docker-compose.test.yml down
+        run: docker-compose -f docker-compose.test.yml down
