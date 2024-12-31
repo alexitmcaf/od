@@ -1,22 +1,53 @@
 version: "3.8"
 services:
-  odoo:
-    image: ${{ secrets.DOCKER_USERNAME }}/od:latest
-    environment:
-      - DB_HOST=db
-      - DB_USER=odoo
-      - DB_PASSWORD=odoo
-      - DB_NAME=odoo16
-    ports:
-      - "8069:8069" # Expose port 8069 to the host
   db:
-    image: postgres:13
+    image: postgres:15  # Updated to match your `docker-compose.yml`
     environment:
       POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
+      POSTGRES_PASSWORD: odoo16@2022  # Match the password from your configuration
       POSTGRES_DB: odoo16
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "odoo"]
       interval: 5s
       timeout: 10s
       retries: 5
+    networks:
+      - odoo-network
+    restart: always
+
+  odoo:
+    image: ${{ secrets.DOCKER_USERNAME }}/od:latest
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432  # Add the database port
+      - DB_USER=odoo
+      - DB_PASSWORD=odoo16@2022
+      - DB_NAME=odoo16
+    ports:
+      - "10016:8069"  # Match the custom port from your `docker-compose.yml`
+      - "20016:8072"  # Include the long-polling port
+    volumes:
+      - ./addons:/mnt/extra-addons
+      - ./update_module_list.py:/scripts/update_module_list.py
+      - ./etc:/etc/odoo
+      - ./scripts:/scripts
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+      /scripts/wait-for-it.sh db:5432 --timeout=60 &&
+      python3 /scripts/update_module_list.py &&
+      /entrypoint.sh odoo"
+    networks:
+      - odoo-network
+    restart: always
+
+volumes:
+  postgres_data: {}
+
+networks:
+  odoo-network:
+    driver: bridge
