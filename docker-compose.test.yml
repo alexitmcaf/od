@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  odoo:
+    image: ${{ secrets.DOCKER_USERNAME }}/od:latest
+    environment:
+      - DB_HOST=db
+      - DB_USER=odoo
+      - DB_PASSWORD=odoo
+      - DB_NAME=odoo16
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: odoo16
