@@ -4,25 +4,20 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: odoo  # PostgreSQL username
-      POSTGRES_PASSWORD: odoo16@2022  # PostgreSQL password
-      POSTGRES_DB: odoo16  # Default database
-      PGDATA: /var/lib/postgresql/data  # Data directory
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo16@2022
+      POSTGRES_DB: odoo16
+      PGDATA: /var/lib/postgresql/data
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Persistent storage
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h db -U odoo -d odoo16"]  # Check database readiness
+      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo16"]
       interval: 5s
       timeout: 10s
       retries: 5
     networks:
       - odoo-network
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 512M  # Memory limit for PostgreSQL
-          cpus: "0.5"  # CPU limit for PostgreSQL
 
   odoo16:
     image: myodoo:16
@@ -30,41 +25,34 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     depends_on:
-      db:
-        condition: service_healthy  # Wait for PostgreSQL to be ready
+      - db
     ports:
-      - "10016:8069"  # Odoo web interface
-      - "20016:8072"  # Odoo longpolling service
+      - "10016:8069"
+      - "20016:8072"
     environment:
-      DB_HOST: db  # PostgreSQL host
-      DB_PORT: 5432  # PostgreSQL port
-      DB_USER: odoo  # PostgreSQL username
-      DB_PASSWORD: odoo16@2022  # PostgreSQL password
-      DB_NAME: odoo16  # Default Odoo database
-      ODOO_CONF: /etc/odoo/odoo.conf  # Odoo configuration file
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: odoo
+      DB_PASSWORD: odoo16@2022
+      DB_NAME: odoo16
+      ODOO_CONF: /etc/odoo/odoo.conf
     volumes:
-      - ./addons:/mnt/extra-addons  # Custom addons directory
-      - ./update_module_list.py:/scripts/update_module_list.py  # Update script
-      - ./etc:/etc/odoo  # Configuration files
-      - ./scripts:/scripts  # Custom scripts
-      - ./logs:/var/log/odoo  # Logs directory
+      - ./addons:/mnt/extra-addons
+      - ./update_module_list.py:/scripts/update_module_list.py
+      - ./etc:/etc/odoo
+      - ./scripts:/scripts
+      - ./logs:/var/log/odoo
     entrypoint: >
       bash -c "
       /scripts/wait-for-it.sh db:5432 --timeout=60 &&
-      /entrypoint.sh odoo -d odoo16 -i base --stop-after-init &&
-      /entrypoint.sh odoo"
+      /entrypoint.sh odoo -d odoo16"
     networks:
       - odoo-network
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1G  # Memory limit for Odoo
-          cpus: "1.0"  # CPU limit for Odoo
 
 volumes:
-  postgres_data: {}  # Persistent volume for PostgreSQL
+  postgres_data: {}
 
 networks:
   odoo-network:
-    driver: bridge  # Network driver
+    driver: bridge

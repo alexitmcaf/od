@@ -59,7 +59,7 @@ jobs:
 
       - name: Test Odoo Service
         run: |
-          for i in {1..20}; do
+          for i in {1..30}; do
             if curl -f http://localhost:10016; then
               echo "Odoo is up and running!"
               break
@@ -73,9 +73,12 @@ jobs:
             exit 1
           fi
 
-      - name: Debug Odoo Logs
+      - name: Debug Odoo Logs (Detailed)
+        run: docker logs $(docker ps -q -f name=odoo16)
+
+      - name: Check Database State
         run: |
-          docker logs $(docker ps -q -f name=odoo16)
+          docker exec $(docker ps -q -f name=db) psql -U odoo -d odoo16 -c '\dt'
 
       - name: Tear Down Docker Compose
         if: always()
