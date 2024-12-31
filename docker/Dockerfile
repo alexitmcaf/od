@@ -7,11 +7,11 @@ USER root
 # Add the PostgreSQL APT repository and key
 RUN apt-get update && apt-get install -y wget gnupg \
     && wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+    && echo "deb http://apt.postgresql.org/pub/repos/apt $(grep -oP '(?<=CODENAME=)\w+' /etc/os-release)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 # Install necessary utilities and dependencies
 RUN apt-get update \
-    && apt-get install -y iputils-ping python3-pip libpq-dev=17.2-1.pgdg110+1 build-essential \
+    && apt-get install -y iputils-ping python3-pip libpq-dev build-essential \
     && pip3 install psycopg2-binary \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
