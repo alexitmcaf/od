@@ -47,6 +47,16 @@ jobs:
           echo "Listing PostgreSQL databases..."
           docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "\l"
 
+      - name: Test Networking Between Services
+        run: |
+          echo "Testing network connectivity between Odoo and PostgreSQL..."
+          docker exec $(docker ps -q -f name=odoo16) ping -c 4 db
+
+      - name: Test PostgreSQL Connection from Odoo
+        run: |
+          echo "Testing PostgreSQL connection from Odoo..."
+          docker exec $(docker ps -q -f name=odoo16) psql -U odoo -h db -d odoo16 -c "\l"
+
       - name: Test Odoo Service
         run: |
           echo "Waiting for Odoo to be ready..."
@@ -69,6 +79,11 @@ jobs:
         run: |
           echo "Fetching Odoo logs..."
           docker logs $(docker ps -q -f name=odoo16)
+
+      - name: Debug Container Networking
+        run: |
+          echo "Inspecting Odoo container networking..."
+          docker inspect $(docker ps -q -f name=odoo16)
 
       - name: Stop Docker Compose
         run: docker-compose -f docker-compose.test.yml down
