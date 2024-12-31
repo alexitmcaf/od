@@ -35,8 +35,9 @@ jobs:
             sleep 10
           done
 
-      - name: Create Odoo Database
+      - name: Create Odoo Database if Not Exists
         run: |
+          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "SELECT 1 FROM pg_database WHERE datname='odoo16';" | grep -q 1 || \
           docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "CREATE DATABASE odoo16;"
 
       - name: Debug PostgreSQL
