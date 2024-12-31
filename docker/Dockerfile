@@ -4,27 +4,23 @@ FROM odoo:16.0
 # Switch to root for package installation
 USER root
 
+# Add the PostgreSQL APT repository and key
+RUN apt-get update && apt-get install -y wget gnupg \
+    && wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
 # Install necessary utilities and dependencies
 RUN apt-get update \
-    && apt-get install -y iputils-ping python3-pip libpq-dev build-essential \
+    && apt-get install -y iputils-ping python3-pip libpq-dev=17.2-1.pgdg110+1 build-essential \
     && pip3 install psycopg2-binary \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Add custom Odoo modules
-COPY ./addons /mnt/extra-addons
-
-# Switch back to odoo user
+# Switch back to the odoo user
 USER odoo
 
-# Expose the port Odoo will run on
+# Expose the Odoo port
 EXPOSE 8069
-
-# Set default environment variables
-ENV DB_HOST=db \
-    DB_PORT=5432 \
-    DB_USER=odoo \
-    DB_PASSWORD=odoo16@2022
 
 # Set the entrypoint for the container
 ENTRYPOINT ["/entrypoint.sh"]
