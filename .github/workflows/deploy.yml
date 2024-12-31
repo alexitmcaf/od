@@ -1,4 +1,4 @@
-name: CI/CD for Odoo with Custom PostgreSQL
+name: CI/CD for Odoo with PostgreSQL
 
 on:
   push:
@@ -9,81 +9,63 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  build_and_deploy:
+  build_and_test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install Docker Compose
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
+          docker build -t myodoo:16 .
 
-      - name: Start Docker Compose
-        run: docker-compose -f docker-compose.test.yml up -d --build
-
-      - name: List Running Containers
-        run: docker ps -a
-
-      - name: Wait for PostgreSQL
+      - name: Push Docker Image to Docker Hub
         run: |
-          echo "Waiting for PostgreSQL to be ready..."
-          for i in {1..30}; do  # Increase retries to 30
+          docker tag myodoo:16 alexitmcaf/myodoo:latest
+          docker push alexitmcaf/myodoo:latest
+
+      - name: Start Docker Compose for Tests
+        run: |
+          docker-compose -f docker-compose.yml up -d --build
+
+      - name: Wait for PostgreSQL to be Ready
+        run: |
+          for i in {1..10}; do
             docker exec $(docker ps -q -f name=db) pg_isready -U odoo && break
-            echo "PostgreSQL not ready yet..."
-            sleep 10
+            echo "PostgreSQL not ready, retrying in 10s..."
+            sleep 5
           done
           docker exec $(docker ps -q -f name=db) pg_isready -U odoo || exit 1
 
-      - name: Create Odoo Database if Not Exists
-        run: |
-          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "SELECT 1 FROM pg_database WHERE datname='odoo16';" | grep -q 1 || \
-          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "CREATE DATABASE odoo16;"
-
-      - name: Debug PostgreSQL
-        run: |
-          echo "Listing PostgreSQL databases..."
-          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "\l"
-
-      - name: Test Networking Between Services
-        run: |
-          echo "Testing network connectivity between Odoo and PostgreSQL..."
-          docker exec $(docker ps -q -f name=odoo16) ping -c 4 db
-
-      - name: Test PostgreSQL Connection from Odoo
-        run: |
-          echo "Testing PostgreSQL connection from Odoo..."
-          docker exec $(docker ps -q -f name=odoo16) psql -U odoo -h db -d odoo16 -c "\l"
-
       - name: Test Odoo Service
         run: |
-          echo "Waiting for Odoo to be ready..."
-          for i in {1..60}; do  # Increase retries to 60
+          for i in {1..10}; do
             if curl -f http://localhost:10016; then
-              echo "Odoo is ready!"
+              echo "Odoo is up and running!"
               break
             fi
-            echo "Retrying in 10 seconds..."
-            sleep 10
+            echo "Waiting for Odoo to start..."
+            sleep 5
           done
 
-          # Fail the build if Odoo is still not ready
           if ! curl -f http://localhost:10016; then
-            echo "Odoo failed to start or connect to PostgreSQL. Check logs for details."
+            echo "Odoo failed to start. Check logs."
             exit 1
           fi
 
       - name: Debug Odoo Logs
         run: |
-          echo "Fetching Odoo logs..."
           docker logs $(docker ps -q -f name=odoo16)
 
-      - name: Debug Container Networking
-        run: |
-          echo "Inspecting Odoo container networking..."
-          docker inspect $(docker ps -q -f name=odoo16)
-
-      - name: Stop Docker Compose
-        run: docker-compose -f docker-compose.test.yml down
+      - name: Tear Down Docker Compose
+        run: docker-compose down
