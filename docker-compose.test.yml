@@ -16,6 +16,11 @@ services:
     networks:
       - odoo-network
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
 
   odoo16:
     image: myodoo:16
@@ -47,10 +52,14 @@ services:
       /scripts/wait-for-it.sh db:5432 --timeout=60 &&
       /entrypoint.sh odoo -d odoo16 -i base --stop-after-init &&
       /entrypoint.sh odoo"
-
     networks:
       - odoo-network
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
 
 volumes:
   postgres_data: {}

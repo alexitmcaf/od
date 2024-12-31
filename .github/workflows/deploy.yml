@@ -29,11 +29,13 @@ jobs:
 
       - name: Wait for PostgreSQL
         run: |
-          for i in {1..20}; do
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..30}; do  # Increase retries to 30
             docker exec $(docker ps -q -f name=db) pg_isready -U odoo && break
-            echo "Waiting for PostgreSQL to be ready..."
+            echo "PostgreSQL not ready yet..."
             sleep 10
           done
+          docker exec $(docker ps -q -f name=db) pg_isready -U odoo || exit 1
 
       - name: Create Odoo Database if Not Exists
         run: |
@@ -42,12 +44,13 @@ jobs:
 
       - name: Debug PostgreSQL
         run: |
+          echo "Listing PostgreSQL databases..."
           docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "\l"
 
       - name: Test Odoo Service
         run: |
           echo "Waiting for Odoo to be ready..."
-          for i in {1..40}; do  # Increase retries to 40
+          for i in {1..60}; do  # Increase retries to 60
             if curl -f http://localhost:10016; then
               echo "Odoo is ready!"
               break
@@ -56,7 +59,7 @@ jobs:
             sleep 10
           done
 
-          # If curl still fails after retries, fail the build
+          # Fail the build if Odoo is still not ready
           if ! curl -f http://localhost:10016; then
             echo "Odoo failed to start or connect to PostgreSQL. Check logs for details."
             exit 1
@@ -64,7 +67,8 @@ jobs:
 
       - name: Debug Odoo Logs
         run: |
+          echo "Fetching Odoo logs..."
           docker logs $(docker ps -q -f name=odoo16)
-          
+
       - name: Stop Docker Compose
         run: docker-compose -f docker-compose.test.yml down
