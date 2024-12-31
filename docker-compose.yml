@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - odoo-network
-    restart: always
+    restart: unless-stopped
 
   odoo16:
     build:
@@ -33,7 +33,6 @@ services:
       ODOO_CONF: /etc/odoo/odoo.conf
     volumes:
       - ./addons:/mnt/extra-addons
-      - ./update_module_list.py:/scripts/update_module_list.py
       - ./etc:/etc/odoo
       - ./scripts:/scripts
     entrypoint: >
@@ -41,10 +40,9 @@ services:
       /scripts/wait-for-it.sh db:5432 --timeout=60 &&
       python3 /scripts/update_module_list.py &&
       /entrypoint.sh odoo"
-    restart: always
+    restart: unless-stopped
     networks:
       - odoo-network
-
 
 volumes:
   postgres_data: {}

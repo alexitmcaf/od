@@ -11,21 +11,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo16"]
+      test: ["CMD-SHELL", "pg_isready -U odoo -d odoo16_test"]
       interval: 5s
       timeout: 10s
       retries: 5
     networks:
       - odoo-network
-    restart: always
+    restart: unless-stopped
 
   odoo16:
-    image: myodoo:16
     build:
       context: .
       dockerfile: docker/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "10016:8069"
       - "20016:8072"
@@ -45,10 +45,10 @@ services:
     entrypoint: >
       bash -c "
       /scripts/wait-for-it.sh db:5432 --timeout=60 || exit 1 &&
-      /entrypoint.sh odoo -d odoo16"
+      /entrypoint.sh odoo -d odoo16_test"
     networks:
       - odoo-network
-    restart: always
+    restart: unless-stopped
 
 volumes:
   postgres_data: {}
