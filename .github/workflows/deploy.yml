@@ -27,7 +27,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t alexitmcaf/myodoo:latest -f docker/Dockerfile .
+          docker build -t alexitmcaf/myodoo:16 -f docker/Dockerfile .
 
       - name: Push Docker Image to Docker Hub
         run: |
