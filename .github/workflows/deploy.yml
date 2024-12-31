@@ -55,7 +55,7 @@ jobs:
           tags: myodoo:16
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/od:cache
           cache-to: type=inline
-          
+
       # Step 8: Install Docker Compose
       - name: Install Docker Compose
         run: |
@@ -148,7 +148,7 @@ jobs:
       - name: Test Odoo Service
         run: |
           echo "Waiting for Odoo to be ready..."
-          for i in {1..20}; do
+          for i in {1..10}; do
             if curl -f http://localhost:10016; then
               echo "Odoo is ready!"
               break

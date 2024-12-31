@@ -9,7 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "odoo"]
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
       interval: 5s
       timeout: 10s
       retries: 5
@@ -26,8 +26,8 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "10016:8069"
-      - "20016:8072"
+      - "10016:8069" # Main Odoo service
+      - "20016:8072" # Odoo longpolling service
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -40,6 +40,7 @@ services:
       - ./update_module_list.py:/scripts/update_module_list.py
       - ./etc:/etc/odoo
       - ./scripts:/scripts
+      - ./logs:/var/log/odoo # Added logs directory for debugging
     entrypoint: >
       bash -c "
       /scripts/wait-for-it.sh db:5432 --timeout=60 &&
