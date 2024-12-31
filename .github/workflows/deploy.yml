@@ -77,7 +77,10 @@ jobs:
               restart: always
 
             odoo16:
-              image: myodoo:16
+              image: myodoo:16  # Use the locally built image
+              build:
+                context: .
+                dockerfile: docker/Dockerfile
               depends_on:
                 db:
                   condition: service_healthy
@@ -129,6 +132,3 @@ jobs:
 
           docker-compose -f docker-compose.test.yml logs
           docker-compose -f docker-compose.test.yml down
-
-      - name: Remove Docker Images
-        run: docker image prune -f
