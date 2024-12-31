@@ -65,12 +65,6 @@ jobs:
       - name: Debug Odoo Logs
         run: |
           docker logs $(docker ps -q -f name=odoo16)
-
-      - name: Upload Logs
-        uses: actions/upload-artifact@v2
-        with:
-          name: odoo-logs
-          path: ./odoo-logs/
-
+          
       - name: Stop Docker Compose
         run: docker-compose -f docker-compose.test.yml down
