@@ -63,7 +63,7 @@ jobs:
           sudo apt-get install -y docker-compose
 
       # Step 9: Test Odoo and PostgreSQL Integration
-      - name: Test Odoo and PostgreSQL Integration
+            - name: Test Odoo and PostgreSQL Integration
         run: |
           cat <<EOF > docker-compose.test.yml
           version: '3.8'
@@ -135,6 +135,10 @@ jobs:
             echo "Waiting for PostgreSQL to be ready..."
             sleep 5
           done
+
+      - name: Create Odoo Database
+        run: |
+          docker exec od_db_1 psql -U odoo -c "CREATE DATABASE odoo;"
 
       - name: Debug PostgreSQL
         run: |
