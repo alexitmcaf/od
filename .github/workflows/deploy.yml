@@ -138,7 +138,7 @@ jobs:
 
       - name: Create Odoo Database
         run: |
-          docker exec od_db_1 psql -U odoo -c "CREATE DATABASE odoo;"
+          docker exec od_db_1 psql -U odoo -d postgres -c "CREATE DATABASE odoo;"
 
       - name: Debug PostgreSQL
         run: |
