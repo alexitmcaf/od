@@ -7,6 +7,8 @@ services:
       - DB_USER=odoo
       - DB_PASSWORD=odoo
       - DB_NAME=odoo16
+    ports:
+      - "8069:8069" # Expose port 8069 to the host
   db:
     image: postgres:13
     environment:
