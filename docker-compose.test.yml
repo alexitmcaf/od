@@ -44,7 +44,7 @@ services:
       - ./logs:/var/log/odoo
     entrypoint: >
       bash -c "
-      /scripts/wait-for-it.sh db:5432 --timeout=60 &&
+      /scripts/wait-for-it.sh db:5432 --timeout=60 || exit 1 &&
       /entrypoint.sh odoo -d odoo16"
     networks:
       - odoo-network
