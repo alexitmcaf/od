@@ -1,25 +1,16 @@
 # Use the official Odoo image as the base
-FROM odoo:16.0
+FROM odoo:16
 
-# Switch to root for package installation
-USER root
+# Copy your custom addons into the container
+COPY ./addons /mnt/extra-addons
 
-# Add the PostgreSQL APT repository and key
-RUN apt-get update && apt-get install -y wget gnupg \
-    && wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt $(grep -oP '(?<=CODENAME=)\w+' /etc/os-release)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+# Copy your Odoo configuration file into the container
+COPY ./etc/odoo.conf /etc/odoo/
+# COPY odoo.conf /etc/odoo/
+# Set the environment variable for the Odoo config file
+ENV ODOO_CONF=/etc/odoo/odoo.conf
 
-# Install necessary utilities and dependencies
-RUN apt-get update \
-    && apt-get install -y iputils-ping python3-pip libpq-dev build-essential \
-    && pip3 install psycopg2-binary \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Switch back to the odoo user
-USER odoo
-
-# Expose the Odoo port
+# Expose the port Odoo will run on
 EXPOSE 8069
 
 # Set the entrypoint for the container
