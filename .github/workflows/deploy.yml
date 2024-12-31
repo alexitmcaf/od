@@ -47,7 +47,7 @@ jobs:
       - name: Test Odoo Service
         run: |
           echo "Waiting for Odoo to be ready..."
-          for i in {1..20}; do
+          for i in {1..40}; do  # Increase retries to 40
             if curl -f http://localhost:10016; then
               echo "Odoo is ready!"
               break
