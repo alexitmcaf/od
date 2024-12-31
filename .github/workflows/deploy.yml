@@ -47,16 +47,15 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Step 7: Build and Push Odoo Docker image
-      - name: Build and Push Odoo Docker image
+      - name: Build Odoo Docker image
         uses: docker/build-push-action@v2
         with:
-          context: docker
+          context: .
           file: docker/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/od:latest,${{ secrets.DOCKER_USERNAME }}/od:${{ env.IMAGE_TAG }}
+          tags: myodoo:16
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/od:cache
           cache-to: type=inline
-
+          
       # Step 8: Install Docker Compose
       - name: Install Docker Compose
         run: |
@@ -64,10 +63,10 @@ jobs:
           sudo apt-get install -y docker-compose
 
       # Step 9: Test Odoo and PostgreSQL Integration
-      - name: Test Odoo and PostgreSQL Integration
+            - name: Test Odoo and PostgreSQL Integration
         run: |
           cat <<EOF > docker-compose.test.yml
-          version: '3.7'
+          version: '3.8'
           services:
             db:
               image: postgres:15
@@ -87,7 +86,7 @@ jobs:
               restart: always
 
             odoo16:
-              image: myodoo:16
+              image: myodoo:16  # Use the locally built image
               depends_on:
                 db:
                   condition: service_healthy
