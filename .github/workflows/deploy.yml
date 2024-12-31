@@ -60,7 +60,8 @@ jobs:
       # Step 8: Test Odoo and PostgreSQL Integration
       - name: Test Odoo and PostgreSQL Integration
         run: |
-          echo "version: '3.8'
+          cat <<EOF > docker-compose.test.yml
+          version: '3.8'
           services:
             odoo:
               image: ${{ secrets.DOCKER_USERNAME }}/od:latest
@@ -78,7 +79,8 @@ jobs:
               environment:
                 POSTGRES_USER: odoo
                 POSTGRES_PASSWORD: odoo
-                POSTGRES_DB: odoo16' > docker-compose.test.yml
+                POSTGRES_DB: odoo16
+          EOF
 
           docker-compose -f docker-compose.test.yml up -d
           sleep 20
