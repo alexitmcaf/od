@@ -1,3 +1,68 @@
+name: CI/CD for Odoo with Custom PostgreSQL
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # Step 2: Verify addons directory
+      - name: Verify addons directory
+        run: test -d ./addons || { echo "addons directory not found"; exit 1; }
+
+      # Step 3: Verify odoo.conf file
+      - name: Verify odoo.conf file
+        run: test -f ./etc/odoo.conf || { echo "odoo.conf file not found"; exit 1; }
+
+      # Step 4: Copy addons and odoo.conf to docker folder
+      - name: Copy addons and odoo.conf to docker folder
+        run: |
+          mkdir -p docker/addons
+          mkdir -p docker/etc
+          cp -r ./addons/* ./docker/addons/
+          cp ./etc/odoo.conf ./docker/etc/odoo.conf
+
+      # Step 5: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # Step 6: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 7: Build Odoo Docker image
+      - name: Build Odoo Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: docker/Dockerfile
+          tags: myodoo:16
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/od:cache
+          cache-to: type=inline
+          
+      # Step 8: Install Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      # Step 9: Test Odoo and PostgreSQL Integration
       - name: Test Odoo and PostgreSQL Integration
         run: |
           cat <<EOF > docker-compose.test.yml
