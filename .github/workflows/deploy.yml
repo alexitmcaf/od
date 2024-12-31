@@ -13,25 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code
       - name: Checkout the repository
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      # Step 2: Debug repository files
-      - name: List repository files
-        run: ls -la
-
-      # Step 3: Verify addons directory exists
       - name: Verify addons directory
-        run: ls -la ./addons || echo "addons directory not found"
+        run: test -d ./addons || { echo "addons directory not found"; exit 1; }
 
-      # Step 4: Verify odoo.conf file exists
       - name: Verify odoo.conf file
-        run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
+        run: test -f ./etc/odoo.conf || { echo "odoo.conf file not found"; exit 1; }
 
-      # Step 5: Copy addons and config to docker folder (if necessary)
       - name: Copy addons and odoo.conf to docker folder
         run: |
           mkdir -p docker/addons
@@ -39,18 +31,15 @@ jobs:
           cp -r ./addons/* ./docker/addons/
           cp ./etc/odoo.conf ./docker/etc/odoo.conf
 
-      # Step 6: Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      # Step 7: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 8: Build and Push Odoo Docker image
       - name: Build and Push Odoo Docker image
         uses: docker/build-push-action@v2
         with:
@@ -58,3 +47,11 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/od:latest,${{ secrets.DOCKER_USERNAME }}/od:${{ env.IMAGE_TAG }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/od:cache
+          cache-to: type=inline
+
+      - name: Test Docker Image
+        run: |
+          docker run --rm -d -p 8069:8069 ${{ secrets.DOCKER_USERNAME }}/od:latest
+          sleep 10
+          curl -f http://localhost:8069 || { echo "Odoo failed to start"; exit 1; }
