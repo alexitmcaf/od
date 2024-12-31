@@ -31,7 +31,7 @@ services:
       dockerfile: docker/Dockerfile
     depends_on:
       db:
-        condition: service_healthy  # Wait for PostgreSQL to be ready
+        condition: db  # Wait for PostgreSQL to be ready
     ports:
       - "10016:8069"  # Odoo web interface
       - "20016:8072"  # Odoo longpolling service
