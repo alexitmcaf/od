@@ -42,7 +42,7 @@ jobs:
 
       - name: Debug PostgreSQL
         run: |
-          docker exec $(docker ps -q -f name=db) psql -U odoo -c "\l"
+          docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "\l"
 
       - name: Wait for Odoo
         run: |
