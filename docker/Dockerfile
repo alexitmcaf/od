@@ -1,12 +1,17 @@
 # Use the official Odoo image as the base
 FROM odoo:16.0
 
-# Install necessary utilities
-RUN apt-get update && apt-get install -y iputils-ping && rm -rf /var/lib/apt/lists/*
+# Switch to root for package installation
+USER root
 
-# Copy your custom addons and configuration as needed
-COPY ./addons /mnt/extra-addons
-COPY ./etc/odoo.conf /etc/odoo/
+# Install necessary utilities
+RUN apt-get update \
+    && apt-get install -y iputils-ping \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to odoo user
+USER odoo
 
 # Expose the port Odoo will run on
 EXPOSE 8069
