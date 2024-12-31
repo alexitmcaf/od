@@ -44,8 +44,9 @@ jobs:
         run: |
           docker exec $(docker ps -q -f name=db) psql -U odoo -d postgres -c "\l"
 
-      - name: Wait for Odoo
+      - name: Test Odoo Service
         run: |
+          echo "Waiting for Odoo to be ready..."
           for i in {1..20}; do
             if curl -f http://localhost:10016; then
               echo "Odoo is ready!"
@@ -55,5 +56,14 @@ jobs:
             sleep 10
           done
 
+          # If curl still fails after retries, fail the build
+          if ! curl -f http://localhost:10016; then
+            echo "Odoo failed to start or connect to PostgreSQL. Check logs for details."
+            exit 1
+          fi
+
+      - name: Debug Odoo Logs
+        run: |
+          docker logs $(docker ps -q -f name=odoo16)
       - name: Stop Docker Compose
-        run: docker-compose -f docker-compose.test.yml down
+        run: d    ocker-compose -f docker-compose.test.yml down
